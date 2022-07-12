@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace BooksApp.Migrations
+namespace BooksApp.Data.Migrations
 {
     public partial class initialsetup : Migration
     {

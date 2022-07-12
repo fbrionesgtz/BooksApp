@@ -7,14 +7,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BooksApp.Data;
 using BooksApp.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BooksApp.Controllers
 {
     public class BooksController : Controller
     {
-        private readonly BooksAppContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public BooksController(BooksAppContext context)
+        public BooksController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -44,6 +45,7 @@ namespace BooksApp.Controllers
         }
 
         // GET: Books/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -52,6 +54,7 @@ namespace BooksApp.Controllers
         // POST: Books/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Author,YearPublished")] Book book)
@@ -66,6 +69,7 @@ namespace BooksApp.Controllers
         }
 
         // GET: Books/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -84,6 +88,7 @@ namespace BooksApp.Controllers
         // POST: Books/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Author,YearPublished")] Book book)
@@ -117,6 +122,7 @@ namespace BooksApp.Controllers
         }
 
         // GET: Books/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -135,6 +141,7 @@ namespace BooksApp.Controllers
         }
 
         // POST: Books/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

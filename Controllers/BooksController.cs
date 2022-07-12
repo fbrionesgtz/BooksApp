@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BooksApp.Data;
 using BooksApp.Models;
+using BooksApp.ViewModels;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BooksApp.Controllers
@@ -14,10 +17,30 @@ namespace BooksApp.Controllers
     public class BooksController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment webHostEnvironment;
+        private Book book;
 
-        public BooksController(ApplicationDbContext context)
+        public BooksController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
+            webHostEnvironment = hostEnvironment;
+        }
+
+        private string UploadedFile(BookViewModel model)
+        {
+            string uniqueFileName = null;
+
+            if (model.Image != null)
+            {
+                string uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "images");
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + model.Image.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    model.Image.CopyTo(fileStream);
+                }
+            }
+            return uniqueFileName;
         }
 
         // GET: Books
@@ -57,10 +80,20 @@ namespace BooksApp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Author,YearPublished")] Book book)
+        public async Task<IActionResult> Create([Bind("Id,Title,Author,YearPublished,Image")] BookViewModel model)
         {
+            string uniqueFileName = UploadedFile(model);
+
             if (ModelState.IsValid)
             {
+                book = new Book
+                {
+                    Title = model.Title,
+                    Author = model.Author,
+                    YearPublished = model.YearPublished,
+                    Image = uniqueFileName,
+                };
+
                 _context.Add(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -82,6 +115,7 @@ namespace BooksApp.Controllers
             {
                 return NotFound();
             }
+
             return View(book);
         }
 
@@ -91,7 +125,7 @@ namespace BooksApp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Author,YearPublished")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Author,YearPublished,Image")] Book book)
         {
             if (id != book.Id)
             {
